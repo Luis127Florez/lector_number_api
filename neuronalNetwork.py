@@ -6,7 +6,7 @@ import numpy as np
 from tensorflow.keras import models
 from tensorflow.keras import layers
 
-def trainModel():
+def trainModelAndSave():
     import matplotlib.pyplot as plt
     print(tf.__version__)
 
@@ -93,5 +93,11 @@ def trainModel():
     
     # Guardamos el modelo en disco
     network.save("modelo_mnist.h5")
+    
+    return {
+        test_loss: test_loss,
+        test_acc: test_acc,
+        test_prec: test_prec,
+    }
     
     
