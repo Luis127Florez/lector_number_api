@@ -5,10 +5,13 @@ from tensorflow.keras import datasets
 import numpy as np
 from tensorflow.keras import models
 from tensorflow.keras import layers
+import matplotlib.pyplot as plt
+import pandas as pd
 
 def trainModelAndSave():
-    import matplotlib.pyplot as plt
     print(tf.__version__)
+    print(keras.__version__)
+    
 
     mnist = datasets.mnist
     print(mnist)
@@ -23,8 +26,9 @@ def trainModelAndSave():
 
     for index, digit in zip(range(1, 9), X_train[:8]):
         plt.subplot(1, 8, index)
-        plt.imshow(np.reshape(digit, (28, 28)), cmap=plt.cm.gray)
+        plt.imshow(np.reshape(digit, (28,28)), cmap=plt.cm.gray)
         plt.title('Ejemplo: ' + str(index))
+
     plt.show()
 
 
@@ -32,7 +36,6 @@ def trainModelAndSave():
 
     print(X_test.shape, 'X_test.shape')
     print(X_val.shape, 'X_val.shape')
-
 
     network = models.Sequential()
 
@@ -49,11 +52,9 @@ def trainModelAndSave():
     print(weights, '（⊙ｏ⊙）')
     print(biases, '（⊙ｏ⊙）')
 
-    network.compile(
-        loss='categorical_crossentropy',
-        optimizer='sgd',
-        metrics=['accuracy', 'Precision']
-    )
+    network.compile(loss='categorical_crossentropy',
+                optimizer='sgd',
+                metrics=['accuracy', 'Precision'])
 
     X_train_prep = X_train.reshape((60000, 28*28))
     X_train_prep = X_train_prep.astype('float32') / 255
@@ -66,19 +67,14 @@ def trainModelAndSave():
 
     from tensorflow.keras.utils import to_categorical
     y_train_prep = to_categorical(y_train)
-    y_test_prep  = to_categorical(y_test)
+    y_test_prep = to_categorical(y_test)
     y_val_prep = to_categorical(y_val)
 
     print('train...')
-    history = network.fit(
-        X_train_prep,
-        y_train_prep,
-        epochs=30,
-        validation_data=(X_val_prep, y_val_prep)
-    )
-
-    import pandas as pd
-    import matplotlib.pyplot as plt
+    history = network.fit(X_train_prep, 
+                      y_train_prep, 
+                      epochs=10, 
+                      validation_data=(X_val_prep, y_val_prep))
 
     pd.DataFrame(history.history).plot(figsize=(10, 7))
     plt.grid(True)
@@ -91,7 +87,18 @@ def trainModelAndSave():
     print(test_acc, '(๑•̀ㅂ•́)و✧')
     print(test_prec, '(๑•̀ㅂ•́)و✧')
     
-    # Guardamos el modelo en disco
+    X_new = X_test[34]
+    plt.imshow(np.reshape(X_new, (28,28)), cmap=plt.cm.gray)
+    plt.show()
+    
+    # Preprocesamos la nueva imagen que queremos predecir
+    X_new_prep = X_new.reshape((1, 28*28))
+    X_new_prep = X_new_prep.astype('float32') / 255
+    
+    y_proba = np.argmax(network.predict(X_new_prep), axis=-1)
+    y_proba.round(2)
+    
+    # Guardamos el modelo en disco 
     network.save("modelo_mnist.h5")
     
     return {
